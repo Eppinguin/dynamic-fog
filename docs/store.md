@@ -41,6 +41,18 @@ To remove a light you can click the Remove Light button at the bottom of the Lig
 Walls are automatically created from the fog shapes of the native Owlbear Rodeo fog tools.
 For a guide on using the native fog tool see [here](https://docs.owlbear.rodeo/docs/fog/).
 
+### Import Walls from UVTT/DD2VTT
+
+You can now import walls and doors directly from Universal VTT (.uvtt) and DD2VTT (.dd2vtt) files. This allows you to quickly set up walls that have been created in other tools like Dungeondraft.
+
+To import walls:
+
+1. Open the Dynamic Fog menu
+2. Scroll down to the "Import Walls" section
+3. Click the "Import UVTT/DD2VTT File" button
+4. Select your .uvtt or .dd2vtt file
+5. The walls and doors will be automatically added to your scene
+
 ## Add a Door
 
 A door can be added to any wall by using the Door tool in the fog toolbar.

@@ -22,6 +22,8 @@ import { LightSoft } from "./icons/LightSoft";
 import { LightHard } from "./icons/LightHard";
 import { LightPrimary } from "./icons/LightPrimary";
 import { LightSecondary } from "./icons/LightSecondary";
+import { ImportVTTMap } from "./ImportVTTMap";
+import Divider from "@mui/material/Divider";
 
 const SmallLabel = styled(FormLabel)({
   fontSize: "0.75rem",
@@ -204,8 +206,7 @@ function MenuControls({
             size="small"
             value={angleValue}
             onChange={(_, v) => v && handleAngleChange(v)}
-            fullWidth
-          >
+            fullWidth>
             <ToggleButton value="FULL" aria-label="full">
               <LightFull />
             </ToggleButton>
@@ -224,8 +225,7 @@ function MenuControls({
             size="small"
             value={edgeValue}
             onChange={(_, v) => v && handleEdgeChange(v)}
-            fullWidth
-          >
+            fullWidth>
             <ToggleButton value="HARD" aria-label="hard">
               <LightHard />
             </ToggleButton>
@@ -242,8 +242,7 @@ function MenuControls({
             size="small"
             value={values.lightType}
             onChange={(_, v) => v && handleTypeChange(v)}
-            fullWidth
-          >
+            fullWidth>
             <ToggleButton value="PRIMARY" aria-label="primary">
               <LightPrimary />
             </ToggleButton>
@@ -268,10 +267,13 @@ function MenuControls({
           });
         }}
         color="error"
-        startIcon={<LightOff />}
-      >
+        startIcon={<LightOff />}>
         Remove Light
       </Button>
+
+      <Divider sx={{ my: 2 }} />
+
+      <ImportVTTMap />
     </Stack>
   );
 }
