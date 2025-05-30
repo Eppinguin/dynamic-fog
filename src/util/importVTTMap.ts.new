@@ -1,3 +1,4 @@
+// filepath: /Users/laurinepping/git/dynamic-fog/src/util/importVTTMap.ts
 import OBR, { buildPath, PathCommand, Command } from "@owlbear-rodeo/sdk";
 import { VTTMapData, WallPoint, Portal } from "../types/VTTMapData";
 import { getPluginId } from "./getPluginId";
@@ -6,13 +7,7 @@ import { Door } from "../types/Door";
 // Parses a Universal VTT (UVTT) or DD2VTT file and returns the map data
 export async function parseVTTFile(file: File): Promise<VTTMapData | null> {
     try {
-        console.log("Parsing VTT file:", file.name, "Size:", Math.round(file.size / 1024), "KB");
-
-        // Check file size (warn if over 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            console.warn(`File size is large (${Math.round(file.size / (1024 * 1024))}MB), this may cause performance issues`);
-        }
-
+        console.log("Parsing VTT file:", file.name);
         const text = await file.text();
         const data = JSON.parse(text);
 
@@ -29,11 +24,11 @@ export async function parseVTTFile(file: File): Promise<VTTMapData | null> {
         }
 
         console.log("File parsed successfully. Format:", data.line_of_sight ? "UVTT" : "DD2VTT");
-
+        
         // Log the wall data structure
         const walls = data.line_of_sight || data.walls;
         console.log(`Wall data found. Total wall segments: ${walls.length}`);
-
+        
         return data as VTTMapData;
     } catch (error) {
         console.error("Error parsing VTT file:", error);
@@ -72,42 +67,42 @@ function createDoorsFromPortals(portals: Portal[] | undefined, walls: Array<Arra
         // Extract portal coordinates
         const portalStart = portal.bounds[0];
         const portalEnd = portal.bounds[1];
-
+        
         // Find the closest wall segment to this portal
         let closestWallIndex = -1;
         let closestDistance = Infinity;
         let doorStartDistance = 0;
         let doorEndDistance = 0;
-
+        
         // Find the wall segment that most closely matches this portal
         walls.forEach((wall, wallIndex) => {
             for (let i = 0; i < wall.length - 1; i++) {
                 const wallStart = wall[i];
                 const wallEnd = wall[i + 1];
-
+                
                 // Calculate distances between portal points and wall segment
                 const distanceToStart = distanceToSegment(portalStart, wallStart, wallEnd);
                 const distanceToEnd = distanceToSegment(portalEnd, wallStart, wallEnd);
-
+                
                 // Check if this wall segment is a candidate for the portal
                 const totalDistance = distanceToStart + distanceToEnd;
                 if (totalDistance < closestDistance) {
                     closestDistance = totalDistance;
                     closestWallIndex = wallIndex;
-
+                    
                     // Calculate the distance along the wall segment
                     const wallLength = Math.sqrt(
-                        Math.pow(wallEnd.x - wallStart.x, 2) +
+                        Math.pow(wallEnd.x - wallStart.x, 2) + 
                         Math.pow(wallEnd.y - wallStart.y, 2)
                     );
-
+                    
                     // Project portal points onto wall segment to get door start and end
                     doorStartDistance = projectPointOnSegment(portalStart, wallStart, wallEnd) / wallLength * 100;
                     doorEndDistance = projectPointOnSegment(portalEnd, wallStart, wallEnd) / wallLength * 100;
                 }
             }
         });
-
+        
         // If we found a matching wall segment, create the door
         if (closestWallIndex >= 0) {
             doors.push({
@@ -137,7 +132,7 @@ function distanceToSegment(point: WallPoint, segmentStart: WallPoint, segmentEnd
     const dot = A * C + B * D;
     const lenSq = C * C + D * D;
     let param = -1;
-
+    
     if (lenSq !== 0) {
         param = dot / lenSq;
     }
@@ -157,7 +152,7 @@ function distanceToSegment(point: WallPoint, segmentStart: WallPoint, segmentEnd
 
     const dx = point.x - xx;
     const dy = point.y - yy;
-
+    
     return Math.sqrt(dx * dx + dy * dy);
 }
 
@@ -171,7 +166,7 @@ function projectPointOnSegment(point: WallPoint, segmentStart: WallPoint, segmen
     const dot = A * C + B * D;
     const lenSq = C * C + D * D;
     let param = 0;
-
+    
     if (lenSq !== 0) {
         param = Math.max(0, Math.min(1, dot / lenSq));
     }
@@ -183,21 +178,37 @@ function projectPointOnSegment(point: WallPoint, segmentStart: WallPoint, segmen
 function transformWalls(walls: Array<Array<WallPoint>>, pixelsPerGrid: number, gridScale: number): Array<Array<WallPoint>> {
     console.log(`Transforming walls with scale factor: ${gridScale / pixelsPerGrid}`);
     console.log(`Pixels per grid: ${pixelsPerGrid}, Grid scale: ${gridScale}`);
-
-    // OBR uses 50px per grid by default, adjust our scale based on that
-    const scaleFactor = gridScale * (50 / pixelsPerGrid);
-
-    // Log the actual scale we're using
-    console.log(`Using scale factor: ${scaleFactor}`);
-
-    return walls.map(wall => {
-        const transformedWall = wall.map(point => {
-            // Apply the scaling to x and y coordinates
-            return {
-                x: point.x * scaleFactor,
-                y: point.y * scaleFactor
-            };
+    
+    const scaleFactor = gridScale / pixelsPerGrid;
+    
+    // Find the bounds of the walls to center them properly
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    
+    // Calculate bounds
+    walls.forEach(wall => {
+        wall.forEach(point => {
+            minX = Math.min(minX, point.x);
+            minY = Math.min(minY, point.y);
+            maxX = Math.max(maxX, point.x);
+            maxY = Math.max(maxY, point.y);
         });
+    });
+    
+    // Calculate center offset for the walls
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    
+    console.log(`Wall bounds: (${minX},${minY}) to (${maxX},${maxY}), Center: (${centerX},${centerY})`);
+    
+    return walls.map(wall => {
+        const transformedWall = wall.map(point => ({
+            // Scale and center the walls
+            x: (point.x - centerX) * scaleFactor,
+            y: (point.y - centerY) * scaleFactor
+        }));
         return transformedWall;
     });
 }
@@ -206,7 +217,7 @@ function transformWalls(walls: Array<Array<WallPoint>>, pixelsPerGrid: number, g
 export async function importVTTMapToOBR(data: VTTMapData): Promise<boolean> {
     try {
         console.log("Starting import of VTT map to OBR");
-
+        
         // Get scene information for proper scaling
         const grid = await OBR.scene.grid.getScale();
         const gridScale = grid.parsed.multiplier;
@@ -231,52 +242,27 @@ export async function importVTTMapToOBR(data: VTTMapData): Promise<boolean> {
         const transformedWalls = transformWalls(walls, pixelsPerGrid, gridScale);
         console.log(`Walls transformed successfully`);
 
-        // Check if any wall has valid points
-        let validWalls = false;
-        transformedWalls.forEach(wall => {
-            if (wall.length >= 2) validWalls = true;
-        });
-
-        if (!validWalls) {
-            console.error("No valid wall segments found after transformation");
-            return false;
-        }
-
         // Convert walls to path commands
         const pathCommands = convertWallsToPathCommands(transformedWalls);
         console.log(`Created ${pathCommands.length} path commands`);
-
-        if (pathCommands.length === 0) {
-            console.error("No valid path commands generated from walls");
-            return false;
-        }
 
         // Create the path item for walls
         const wallsPath = buildPath()
             .commands(pathCommands)
             .layer("FOG")
-            .position({ x: width / 2, y: height / 2 })
-            .strokeWidth(2)  // Use thinner lines
-            .strokeOpacity(1)  // Make sure stroke is visible
-            .strokeColor("#000000")  // Use black for fog walls
-            .fillOpacity(0)  // No fill
-            .fillRule("evenodd")  // Better for complex paths
-            .metadata({
-                [getPluginId("wall-type")]: "wall"  // Mark as wall type
-            })
+            .position(center)
+            .fillRule("nonzero")
+            .fillOpacity(0)
+            .strokeWidth(5)
+            .strokeColor("#000000")
             .build();
-
-        // Log the created path for debugging
-        console.log("Created wall path:", wallsPath);
-        console.log("Path commands:", pathCommands.length > 0 ? pathCommands.slice(0, 5) : "No commands");
-        console.log("Center position:", center);
 
         // Create doors if portals exist
         if (data.portals && data.portals.length > 0) {
             console.log(`Processing ${data.portals.length} portals for doors`);
             const doors = createDoorsFromPortals(data.portals, transformedWalls);
             console.log(`Created ${doors.length} doors from portals`);
-
+            
             if (doors.length > 0) {
                 wallsPath.metadata = {
                     [getPluginId("doors")]: doors
@@ -285,37 +271,8 @@ export async function importVTTMapToOBR(data: VTTMapData): Promise<boolean> {
         }
 
         // Add the walls to the scene
-        try {
-            console.log("Adding wall path to scene. Item:", wallsPath);
-
-            // Get existing FOG layer items to compare
-            const existingItems = await OBR.scene.items.getItems((item) => item.layer === "FOG");
-            console.log(`Current scene has ${existingItems.length} FOG layer items`);
-
-            // Add the walls to the scene
-            console.log("Adding wall items to scene...");
-            await OBR.scene.items.addItems([wallsPath]);
-
-            // Wait a moment for the scene to update
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            // Get all fog items
-            const finalItems = await OBR.scene.items.getItems((item) =>
-                item.layer === "FOG" &&
-                item.metadata &&
-                getPluginId("wall-type") in item.metadata
-            );
-            console.log(`Found ${finalItems.length} wall items`);
-
-            if (finalItems.length > existingItems.length) {
-                console.log("Walls were successfully added to the scene");
-            } else {
-                console.warn("Wall count did not increase - items may not have been added properly");
-            }
-        } catch (addError) {
-            console.error("Error adding walls to the scene:", addError);
-            return false;
-        }
+        await OBR.scene.items.addItems([wallsPath]);
+        console.log("Walls added to the scene");
 
         return true;
     } catch (error) {

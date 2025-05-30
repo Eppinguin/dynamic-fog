@@ -61,7 +61,17 @@ export function ImportVTTMap() {
       // Import walls to OBR
       const success = await importVTTMapToOBR(mapData);
       if (success) {
-        setSuccess("Walls imported successfully!");
+        // Provide more detailed success message
+        const walls = mapData.line_of_sight || mapData.walls || [];
+        const doorCount = mapData.portals ? mapData.portals.length : 0;
+
+        let successMessage = `Imported ${walls.length} wall segments`;
+        if (doorCount > 0) {
+          successMessage += ` and detected ${doorCount} potential doors`;
+        }
+        successMessage += "!";
+
+        setSuccess(successMessage);
       } else {
         setError("Failed to import walls to the scene.");
       }
@@ -109,6 +119,11 @@ export function ImportVTTMap() {
 
       <Typography variant="caption" color="text.secondary">
         Import walls from Universal VTT (.uvtt) or DD2VTT (.dd2vtt) files.
+        Supports automatic door detection from portals.
+      </Typography>
+
+      <Typography variant="caption" color="text.secondary">
+        Tip: Position your map before importing for best results.
       </Typography>
     </Stack>
   );

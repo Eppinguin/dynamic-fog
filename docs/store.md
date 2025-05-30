@@ -15,6 +15,19 @@ learn-more: https://extensions.owlbear.rodeo/dynamic-fog
 
 Add walls, doors and lights for a simple dynamic fog experience
 
+## Import Walls from VTT Files
+
+Dynamic Fog now supports importing walls and doors directly from Universal VTT (UVTT) and DD2VTT files. This allows you to quickly set up your map with walls and doors that have been defined in other tools like Dungeondraft or Roll20.
+
+To import walls:
+
+1. Open the Dynamic Fog menu
+2. Click on "Import UVTT/DD2VTT File"
+3. Select your .uvtt or .dd2vtt file
+4. The walls and doors will be automatically added to your scene
+
+You can also access the import tool from the fog toolbar.
+
 ## Add a Light
 
 To add a light you can select any image in a Scene and click the Add Light button in the context menu.
