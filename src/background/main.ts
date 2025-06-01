@@ -3,6 +3,7 @@ import CanvasKitInit from "canvaskit-wasm/bin/full/canvaskit";
 import wasm from "canvaskit-wasm/bin/full/canvaskit.wasm?url";
 import { createLightMenu } from "./createLightMenu";
 import { createDoorMode } from "./createDoorMode";
+import { createImportMenu } from "./createImportMenu";
 import { Reconciler } from "./reconcile/Reconciler";
 import { LightReactor } from "./reconcile/reactors/LightReactor";
 import { DoorReactor } from "./reconcile/reactors/DoorReactor";
@@ -23,6 +24,7 @@ async function init() {
   await waitUntilOBRReady();
   createLightMenu();
   createDoorMode(CanvasKit);
+  createImportMenu();
   reconciler = new Reconciler(CanvasKit);
   reconciler.register(new LightReactor(reconciler));
   reconciler.register(new DoorReactor(reconciler));
