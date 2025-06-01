@@ -15,6 +15,21 @@ learn-more: https://extensions.owlbear.rodeo/dynamic-fog
 
 Add walls, doors and lights for a simple dynamic fog experience
 
+## Import Universal VTT
+
+This extension allows you to import Universal VTT files (UVTT, DD2VTT, DF2VTT) to automatically set up walls, doors, and lights in your scene.
+
+To import a Universal VTT file:
+
+1. Select the fog tool in Owlbear Rodeo
+2. Click on the "Import UVTT/DD2VTT" button in the fog tool options
+3. Choose your file
+4. Wait for the import to complete
+
+Universal VTT files can be exported from map creation tools like Dungeondraft, Dungeon Alchemist, MapForge, Arkenforge, and DungeonFog.
+
+![Import UVTT](https://raw.githubusercontent.com/owlbear-rodeo/dynamic-fog/main/docs/uvtt-import.jpg)
+
 ## Add a Light
 
 To add a light you can select any image in a Scene and click the Add Light button in the context menu.
